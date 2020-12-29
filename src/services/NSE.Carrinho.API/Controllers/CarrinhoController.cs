@@ -27,12 +27,14 @@ namespace NSE.Carrinho.API.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<CarrinhoCliente> ObterCarrinho()
         {
             return await _carrinhoBusiness.ObterCarrinhoCliente(_aspNetUser.ObterUserId());
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> AdicionarItemCarrinho(CarrinhoItem item)
         {
             var validation = await _carrinhoBusiness.AdicionarCarrinhoCliente(_aspNetUser.ObterUserId(), item);

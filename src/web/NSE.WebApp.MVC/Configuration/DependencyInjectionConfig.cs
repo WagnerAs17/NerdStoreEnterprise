@@ -19,18 +19,31 @@ namespace NSE.WebApp.MVC.Configuration
         public static void RegisterService(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddSingleton<IValidationAttributeAdapterProvider, CpfValidationAttibuteAdapterProvider>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<IAspNetUser, AspNetUser>();
+
+            #region httpService
 
             services.AddTransient<HttpClientAuthorizationDelegatingHandler>();
-
             services.AddHttpClient<IAutenticacaoService, AutenticacaoService>()
-                .ConfigurePrimaryHttpMessageHandler(() => HttpClientHandler());
-
+                .ConfigurePrimaryHttpMessageHandler(() => HttpClientHandler())
+                .AddPolicyHandler(PollyExtensions.EsperarTentar())
+                .AddTransientHttpErrorPolicy(
+                    p => p.CircuitBreakerAsync(5, TimeSpan.FromSeconds(30)));
 
             services.AddHttpClient<ICatalogoService, CatalogoService>()
                     .ConfigurePrimaryHttpMessageHandler(() => HttpClientHandler())
                     .AddHttpMessageHandler<HttpClientAuthorizationDelegatingHandler>()
                     .AddPolicyHandler(PollyExtensions.EsperarTentar())
                     .AddTransientHttpErrorPolicy(p => p.CircuitBreakerAsync(5, TimeSpan.FromSeconds(30)));
+
+            services.AddHttpClient<ICarrinhoService, CarrinhoService>()
+                .ConfigurePrimaryHttpMessageHandler(() => HttpClientHandler())
+                .AddPolicyHandler(PollyExtensions.EsperarTentar())
+                .AddTransientHttpErrorPolicy(
+                    p => p.CircuitBreakerAsync(5, TimeSpan.FromSeconds(30)));
+
+            #endregion
 
             #region
             //.AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(3, _ =>  TimeSpan.FromMilliseconds(600)));
@@ -42,12 +55,9 @@ namespace NSE.WebApp.MVC.Configuration
             //        .AddHttpMessageHandler<HttpClientAuthorizationDelegatingHandler>()
             //        .AddTypedClient(Refit.RestService.For<ICatalogoServiceRefit>);
             #endregion
-
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddScoped<IAspNetUser, AspNetUser>();
-
         }
 
+        #region httpHandler
         private static HttpClientHandler HttpClientHandler()
         {
             return new HttpClientHandler
@@ -59,7 +69,9 @@ namespace NSE.WebApp.MVC.Configuration
                 }
             };
         }
+        #endregion
 
+        #region PollyExtension
         public class PollyExtensions
         {
             public static AsyncRetryPolicy<HttpResponseMessage> EsperarTentar()
@@ -78,6 +90,7 @@ namespace NSE.WebApp.MVC.Configuration
                     Console.ForegroundColor = ConsoleColor.White;
                 });
             }
-        } 
+        }
+        #endregion
     }
 }

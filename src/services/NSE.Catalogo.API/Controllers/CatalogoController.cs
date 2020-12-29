@@ -27,8 +27,7 @@ namespace NSE.Catalogo.API.Controllers
 
             return await this.produtoRepository.ObterTodos();
         }
-
-        [ClaimsAuthorize("Catalogo", "Ler")]
+        [AllowAnonymous]
         [HttpGet("catalogo/produtos/{id}")]
         public async Task<Produto> ProdutoDetalhe(Guid id)
         {

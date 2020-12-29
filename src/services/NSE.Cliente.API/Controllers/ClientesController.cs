@@ -24,6 +24,7 @@ namespace NSE.Cliente.API.Controllers
             var result = await _mediatorHandler.EnviarComando(
                 new RegistrarClienteCommand(Guid.NewGuid(), "", "", ""));
 
+
             return CustomResponse(result);
         }    
     }
