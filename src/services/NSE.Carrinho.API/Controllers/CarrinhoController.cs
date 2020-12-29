@@ -35,23 +35,25 @@ namespace NSE.Carrinho.API.Controllers
         [HttpPost]
         public async Task<IActionResult> AdicionarItemCarrinho(CarrinhoItem item)
         {
-            var result = await _carrinhoBusiness.AdicionarCarrinhoCliente(_aspNetUser.ObterUserId(), item);
+            var validation = await _carrinhoBusiness.AdicionarCarrinhoCliente(_aspNetUser.ObterUserId(), item);
 
-            if (result <= 0) AdicionarErroProcessamento("Não foi possível salvar os dados.");
-
-            return CustomResponse();
+            return CustomResponse(validation);
         }
 
         [HttpPut("{produtoId}")]
         public async Task<IActionResult> AtualizarItemCarrinho(Guid produtoId, CarrinhoItem item)
         {
-            return CustomResponse();
+            var validation = await _carrinhoBusiness.UpdateCarrinho(_aspNetUser.ObterUserId(), produtoId, item);
+
+            return CustomResponse(validation);
         }
 
         [HttpDelete("{produtoId}")]
         public async Task<IActionResult> ExcluirItemCarrinho(Guid produtoId)
         {
-            return CustomResponse();
+            var validation = await _carrinhoBusiness.DeleteCarrinho(_aspNetUser.ObterUserId(), produtoId);
+
+            return CustomResponse(validation);
         }
     }
 }

@@ -34,15 +34,20 @@ namespace NSE.Carrinho.API.Models
             Quantidade += unidades;
         }
 
+        internal void AtualizarUnidades(int quantidade)
+        {
+            Quantidade = quantidade;
+        }
+
         internal bool EhValido()
         {
-            return new ItemPedidoValidation().Validate(this).IsValid;
+            return new ItemCarrinhoValidation().Validate(this).IsValid;
         }
     }
 
-    public class ItemPedidoValidation : AbstractValidator<CarrinhoItem>
+    public class ItemCarrinhoValidation : AbstractValidator<CarrinhoItem>
     {
-        public ItemPedidoValidation()
+        public ItemCarrinhoValidation()
         {
             RuleFor(x => x.ProdutoId)
                 .NotEqual(Guid.Empty)
@@ -54,15 +59,15 @@ namespace NSE.Carrinho.API.Models
 
             RuleFor(x => x.Quantidade)
                 .GreaterThan(0)
-                .WithMessage("A quantidade miníma de um item é 1.");
+                .WithMessage(item =>  $"A quantidade miníma para o item {item.Nome} é 1.");
 
             RuleFor(x => x.Quantidade)
-                .LessThan(5)
-                .WithMessage("A quantidade máxima de um item é 5.");
+                .LessThan(CarrinhoCliente.QuantidadeMaximaItem)
+                .WithMessage(item =>  $"A quantidade máxima do item {item.Nome} é {CarrinhoCliente.QuantidadeMaximaItem}.");
 
             RuleFor(x => x.Valor)
                 .GreaterThan(0)
-                .WithMessage("O valor do item precisa ser maior do que 0.");
+                .WithMessage(item => $"O valor do {item.Nome} precisa ser maior do que 0.");
         }
     }
 }

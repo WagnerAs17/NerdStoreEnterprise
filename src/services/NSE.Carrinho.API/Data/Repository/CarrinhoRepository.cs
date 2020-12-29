@@ -19,7 +19,14 @@ namespace NSE.Carrinho.API.Data.Repository
                 .Include(x => x.Itens)
                 .FirstOrDefaultAsync(x => x.ClienteId == userId);
         }
-        
+
+        public async Task<CarrinhoItem> ObterCarrinhoItem(Guid carrinhoId, Guid produtoId)
+        {
+            return await _context.CarrinhoItems.FirstOrDefaultAsync(x =>
+                x.CarrinhoId == carrinhoId &&
+                x.ProdutoId == produtoId);
+        }
+
         public async Task AdicionarCarrinhoCliente(CarrinhoCliente carrinho)
         {
             await _context.CarrinhoCliente.AddAsync(carrinho);
@@ -45,5 +52,9 @@ namespace NSE.Carrinho.API.Data.Repository
             return await _context.SaveChangesAsync();
         }
 
+        public void DeleteCarrinhoItem(CarrinhoItem item)
+        {
+            _context.CarrinhoItems.Remove(item);
+        }
     }
 }

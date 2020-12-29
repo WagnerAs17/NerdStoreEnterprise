@@ -11,7 +11,8 @@ namespace NSE.Carrinho.API.Data.Repository
         Task AdicionarCarrinhoItem(CarrinhoItem item);
         void UpdateCarrinho(CarrinhoCliente carrinhos);
         void UpdateCarrinhoItem(CarrinhoItem item);
-
+        Task<CarrinhoItem> ObterCarrinhoItem(Guid carrinhoId, Guid produtoId);
         Task<int> SaveChangesAsync();
+        void DeleteCarrinhoItem(CarrinhoItem item);
     }
 }
