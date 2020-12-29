@@ -16,4 +16,8 @@
     <PackageReference Include="Refit" Version="5.1.67" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\building blocks\NSE.Core\NSE.Core.csproj" />
+  </ItemGroup>
+
 </Project>

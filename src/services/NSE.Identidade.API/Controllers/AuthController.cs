@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using NSE.Core.Messages.Integrations;
 using NSE.Identidade.API.Models;
+using NSE.MessageBus;
 using NSE.WebApi.Core.Controllers;
 using NSE.WebApi.Core.Identidade;
 using System;
@@ -18,20 +20,24 @@ namespace NSE.Identidade.API.Controllers
     [Route("api/identidade")]
     public class AuthController : MainController
     {
-        private readonly SignInManager<IdentityUser> signInManager;
-        private readonly UserManager<IdentityUser> userManager;
-        private readonly AppSettings appSettings;
+        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly AppSettings _appSettings;
+        private readonly IMessageBus _bus;
+
 
         public AuthController
         (
             SignInManager<IdentityUser> signInManager,
             UserManager<IdentityUser> userManager,
-            IOptions<AppSettings> appSettings
+            IOptions<AppSettings> appSettings,
+            IMessageBus bus
         )
         {
-            this.signInManager = signInManager;
-            this.userManager = userManager;
-            this.appSettings = appSettings.Value;
+            _signInManager = signInManager;
+            _userManager = userManager;
+            _appSettings = appSettings.Value;
+            _bus = bus;
         }
 
         [HttpPost("nova-conta")]
@@ -46,10 +52,19 @@ namespace NSE.Identidade.API.Controllers
                 EmailConfirmed = true
             };
 
-            var result = await userManager.CreateAsync(user, usuarioRegistro.Senha);
+            var result = await _userManager.CreateAsync(user, usuarioRegistro.Senha);
 
             if (result.Succeeded)
             {
+                var clienteResult = await RegistrarCliente(usuarioRegistro);
+
+                if (!clienteResult.ValidationResult.IsValid)
+                {
+                    await _userManager.DeleteAsync(user);
+
+                    return CustomResponse(clienteResult.ValidationResult);
+                }
+
                 return CustomResponse(await GerarJwt(usuarioRegistro.Email));
             }
 
@@ -60,12 +75,13 @@ namespace NSE.Identidade.API.Controllers
             return CustomResponse();
         }
 
+        
         [HttpPost("autenticar")]
         public async Task<IActionResult> Login(UsuarioLogin usuarioLogin)
         {
             if (!ModelState.IsValid) return CustomResponse(ModelState);
 
-            var result = await signInManager.PasswordSignInAsync(
+            var result = await _signInManager.PasswordSignInAsync(
                 usuarioLogin.Email, usuarioLogin.Senha, false, true);
 
             if (result.Succeeded)
@@ -85,9 +101,9 @@ namespace NSE.Identidade.API.Controllers
 
         private async Task<usuarioRespostaLogin> GerarJwt(string email)
         {
-            var user = await userManager.FindByEmailAsync(email);
+            var user = await _userManager.FindByEmailAsync(email);
 
-            var claims = await userManager.GetClaimsAsync(user);
+            var claims = await _userManager.GetClaimsAsync(user);
 
             var identityClaim = await ObterClaimsUsuario(claims, user);
 
@@ -98,7 +114,7 @@ namespace NSE.Identidade.API.Controllers
 
         private async Task<ClaimsIdentity> ObterClaimsUsuario(ICollection<Claim> claims, IdentityUser user)
         {
-            var userRoles = await userManager.GetRolesAsync(user);
+            var userRoles = await _userManager.GetRolesAsync(user);
 
             claims.Add(new Claim(JwtRegisteredClaimNames.Sub, user.Id));
             claims.Add(new Claim(JwtRegisteredClaimNames.Email, user.Email));
@@ -120,14 +136,14 @@ namespace NSE.Identidade.API.Controllers
         private string CodificarToken(ClaimsIdentity identityClaim)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
 
             var token = tokenHandler.CreateToken(new SecurityTokenDescriptor
             {
-                Issuer = appSettings.Emissor,
-                Audience = appSettings.ValidoEm,
+                Issuer = _appSettings.Emissor,
+                Audience = _appSettings.ValidoEm,
                 Subject = identityClaim,
-                Expires = DateTime.UtcNow.AddHours(appSettings.ExpiracaoHoras),
+                Expires = DateTime.UtcNow.AddHours(_appSettings.ExpiracaoHoras),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             });
 
@@ -139,7 +155,7 @@ namespace NSE.Identidade.API.Controllers
             var response = new usuarioRespostaLogin
             {
                 AccessToken = encodedToken,
-                ExpireIn = TimeSpan.FromHours(appSettings.ExpiracaoHoras).TotalSeconds,
+                ExpireIn = TimeSpan.FromHours(_appSettings.ExpiracaoHoras).TotalSeconds,
                 UsuarioToken = new UsuarioToken
                 {
                     Id = user.Id,
@@ -153,5 +169,23 @@ namespace NSE.Identidade.API.Controllers
 
         private static long ToUnixEpochDate(DateTime date) 
             => (long)Math.Round((date.ToUniversalTime() - new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero)).TotalSeconds);
+
+        private async Task<ResponseMessage> RegistrarCliente(UsuarioRegistro usuarioRegistro)
+        {
+            var usuario = await _userManager.FindByEmailAsync(usuarioRegistro.Email);
+
+            var usuarioRegistrado = new UsuarioRegistradoIntegrationEvent
+                (Guid.Parse(usuario.Id), usuarioRegistro.Nome, usuarioRegistro.Email, usuarioRegistro.Cpf);
+
+            try
+            {
+                return await _bus.RequestAsync<UsuarioRegistradoIntegrationEvent, ResponseMessage>(usuarioRegistrado);
+            }
+            catch
+            {
+                await _userManager.DeleteAsync(usuario);
+                throw;
+            }
+        }
     }
 }
