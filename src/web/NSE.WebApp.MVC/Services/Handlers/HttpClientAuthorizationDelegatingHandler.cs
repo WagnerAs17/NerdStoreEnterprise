@@ -18,7 +18,8 @@ namespace NSE.WebApp.MVC.Services.Handlers
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var authorizationHeader = this._aspNetUser.ObterHttpContext().Request.Headers["Authorization"];
+           
+            var authorizationHeader = _aspNetUser.ObterHttpContext().Request.Headers["Authorization"];
 
             if (!string.IsNullOrEmpty(authorizationHeader))
             {

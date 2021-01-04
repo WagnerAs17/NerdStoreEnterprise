@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 
 namespace NSE.Carrinho.API.Controllers
 {
-    [Authorize]
-    [Route("api/carrinho")]
     public class CarrinhoController : MainController
     {
         private readonly IAspNetUser _aspNetUser;
@@ -26,15 +24,13 @@ namespace NSE.Carrinho.API.Controllers
             _carrinhoBusiness = carrinhoBusiness;
         }
 
-        [HttpGet]
-        [AllowAnonymous]
+        [HttpGet("carrinho")]
         public async Task<CarrinhoCliente> ObterCarrinho()
         {
             return await _carrinhoBusiness.ObterCarrinhoCliente(_aspNetUser.ObterUserId());
         }
 
-        [HttpPost]
-        [AllowAnonymous]
+        [HttpPost("carrinho")]
         public async Task<IActionResult> AdicionarItemCarrinho(CarrinhoItem item)
         {
             var validation = await _carrinhoBusiness.AdicionarCarrinhoCliente(_aspNetUser.ObterUserId(), item);
@@ -42,7 +38,7 @@ namespace NSE.Carrinho.API.Controllers
             return CustomResponse(validation);
         }
 
-        [HttpPut("{produtoId}")]
+        [HttpPut("carrinho/{produtoId}")]
         public async Task<IActionResult> AtualizarItemCarrinho(Guid produtoId, CarrinhoItem item)
         {
             var validation = await _carrinhoBusiness.UpdateCarrinho(_aspNetUser.ObterUserId(), produtoId, item);
@@ -50,7 +46,7 @@ namespace NSE.Carrinho.API.Controllers
             return CustomResponse(validation);
         }
 
-        [HttpDelete("{produtoId}")]
+        [HttpDelete("carrinho/{produtoId}")]
         public async Task<IActionResult> ExcluirItemCarrinho(Guid produtoId)
         {
             var validation = await _carrinhoBusiness.DeleteCarrinho(_aspNetUser.ObterUserId(), produtoId);

@@ -13,7 +13,6 @@ namespace NSE.Carrinho.API.Configuration
         {
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IAspNetUser, AspNetUser>();
-            services.AddScoped<CarrinhoContext>();
 
             BusinessInjection(services);
             RepositoryInjection(services);
@@ -26,6 +25,7 @@ namespace NSE.Carrinho.API.Configuration
 
         private static void RepositoryInjection(IServiceCollection services)
         {
+            services.AddScoped<CarrinhoContext>();
             services.AddScoped<ICarrinhoRepository, CarrinhoRepository>();
         }
     }

@@ -27,7 +27,9 @@ namespace NSE.Identidade.API.Configuration
 
             app.UseRouting();
 
-            app.UseAuthConfiguration();
+            //app.UseAuthConfiguration();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
