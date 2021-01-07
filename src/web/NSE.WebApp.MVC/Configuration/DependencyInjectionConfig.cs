@@ -23,74 +23,47 @@ namespace NSE.WebApp.MVC.Configuration
             services.AddScoped<IAspNetUser, AspNetUser>();
 
             #region httpService
-
             services.AddTransient<HttpClientAuthorizationDelegatingHandler>();
+
             services.AddHttpClient<IAutenticacaoService, AutenticacaoService>()
-                .ConfigurePrimaryHttpMessageHandler(() => HttpClientHandler())
                 .AddPolicyHandler(PollyExtensions.EsperarTentar())
                 .AddTransientHttpErrorPolicy(
                     p => p.CircuitBreakerAsync(5, TimeSpan.FromSeconds(30)));
 
             services.AddHttpClient<ICatalogoService, CatalogoService>()
-                    .ConfigurePrimaryHttpMessageHandler(() => HttpClientHandler())
                     .AddHttpMessageHandler<HttpClientAuthorizationDelegatingHandler>()
                     .AddPolicyHandler(PollyExtensions.EsperarTentar())
                     .AddTransientHttpErrorPolicy(p => p.CircuitBreakerAsync(5, TimeSpan.FromSeconds(30)));
 
-            services.AddHttpClient<ICarrinhoService, CarrinhoService>()
-                .ConfigurePrimaryHttpMessageHandler(() => HttpClientHandler())
+            services.AddHttpClient<IComprasBffService, ComprasBffService>()
+                .AddHttpMessageHandler<HttpClientAuthorizationDelegatingHandler>()
                 .AddPolicyHandler(PollyExtensions.EsperarTentar())
                 .AddTransientHttpErrorPolicy(
                     p => p.CircuitBreakerAsync(5, TimeSpan.FromSeconds(30)));
 
             #endregion
-
-            #region
-            //.AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(3, _ =>  TimeSpan.FromMilliseconds(600)));
-            //services.AddHttpClient("Refit", options =>
-            //        {
-            //            options.BaseAddress = new Uri(configuration.GetSection("CatalogoUrl").Value);
-            //        })
-            //        .ConfigurePrimaryHttpMessageHandler(() => HttpClientHandler())
-            //        .AddHttpMessageHandler<HttpClientAuthorizationDelegatingHandler>()
-            //        .AddTypedClient(Refit.RestService.For<ICatalogoServiceRefit>);
-            #endregion
         }
 
-        #region httpHandler
-        private static HttpClientHandler HttpClientHandler()
-        {
-            return new HttpClientHandler
-            {
-                ClientCertificateOptions = ClientCertificateOption.Manual,
-                ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyError) =>
-                {
-                    return true;
-                }
-            };
-        }
-        #endregion
+    }
 
-        #region PollyExtension
-        public class PollyExtensions
+    public static class PollyExtensions
+    {
+        public static AsyncRetryPolicy<HttpResponseMessage> EsperarTentar()
         {
-            public static AsyncRetryPolicy<HttpResponseMessage> EsperarTentar()
+            return HttpPolicyExtensions
+            .HandleTransientHttpError()
+            .WaitAndRetryAsync(new[]
             {
-                return HttpPolicyExtensions
-                .HandleTransientHttpError()
-                .WaitAndRetryAsync(new[]
-                {
                     TimeSpan.FromSeconds(1),
                     TimeSpan.FromSeconds(5),
                     TimeSpan.FromSeconds(10),
-                }, (outcome, timespan, retryCount, context) =>
-                {
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine($"Tentando pela {retryCount} vez!");
-                    Console.ForegroundColor = ConsoleColor.White;
-                });
-            }
+            }, (outcome, timespan, retryCount, context) =>
+            {
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"Tentando pela {retryCount} vez!");
+                Console.ForegroundColor = ConsoleColor.White;
+            });
         }
-        #endregion
     }
+    
 }

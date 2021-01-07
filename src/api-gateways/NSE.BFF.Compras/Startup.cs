@@ -1,18 +1,15 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NSE.Identidade.API.Configuration;
-using NSE.Identidade.API.Data;
+using NSE.BFF.Compras.Configuration;
+using NSE.WebApi.Core.Identidade;
 
-namespace NSE.Identidade.API
+namespace NSE.BFF.Compras
 {
     public class Startup
     {
-        public IConfiguration Configuration { get; }
-
         public Startup(IHostEnvironment hostEnvironment)
         {
             var builder = new ConfigurationBuilder()
@@ -29,22 +26,26 @@ namespace NSE.Identidade.API
             Configuration = builder.Build();
         }
 
+        public IConfiguration Configuration { get; }
+
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddIdentityConfiguration(Configuration);
+            services.AddApiConfiguration(Configuration);
+
+            services.AddJwtConfiguration(Configuration);
+
+            services.RegisterServices();
+
+            services.AddMessageBusConfig(Configuration);
 
             services.AddSwaggerConfiguration();
-
-            services.AddApiConfiguration();
-
-            services.AddMessageBusConfiguration(Configuration);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseSwaggerConfiguration();
-
             app.UseApiConfiguration(env);
+
+            app.UseSwaggerConfiguration();
         }
     }
 }

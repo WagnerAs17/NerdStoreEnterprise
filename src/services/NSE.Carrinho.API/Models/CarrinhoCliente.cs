@@ -9,7 +9,7 @@ namespace NSE.Carrinho.API.Models
     public class CarrinhoCliente
     {
 
-        public const int QuantidadeMaximaItem = 15;
+        public const int QuantidadeMaximaItem = 5;
         public CarrinhoCliente(){}
         
         public CarrinhoCliente(Guid clienteId)
@@ -29,7 +29,7 @@ namespace NSE.Carrinho.API.Models
 
         internal bool CarrinhoItemExistente(CarrinhoItem item)
         {
-            return Itens.Any(item => item.ProdutoId == item.ProdutoId);
+            return Itens.Any(i => i.ProdutoId == item.ProdutoId);
         }
 
         internal CarrinhoItem ObterPorProdutoId(Guid produtoId) 

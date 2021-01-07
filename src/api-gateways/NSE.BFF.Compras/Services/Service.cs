@@ -1,12 +1,11 @@
 ﻿using NSE.Core.Communication;
-using NSE.WebApp.MVC.Extensions;
-using NSE.WebApp.MVC.Models;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace NSE.WebApp.MVC.Services
+namespace NSE.BFF.Compras.Services
 {
     public abstract class Service
     {
@@ -24,7 +23,8 @@ namespace NSE.WebApp.MVC.Services
         {
             var options = new JsonSerializerOptions
             {
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
+                IgnoreNullValues = true
             };
 
             return JsonSerializer.Deserialize<T>(await response.Content.ReadAsStringAsync(), options);
@@ -32,25 +32,15 @@ namespace NSE.WebApp.MVC.Services
 
         protected bool TratarErrosResponse(HttpResponseMessage response)
         {
-            switch ((int)response.StatusCode)
-            {
-                case 401:
-                case 403:
-                case 404:
-                case 500:
-                    throw new CustomHttpRequestException(response.StatusCode);
-
-                case 400:
-                    return false;
-            }
+            if (response.StatusCode == HttpStatusCode.BadRequest) return false;
 
             response.EnsureSuccessStatusCode();
             return true;
         }
 
-        protected ResponseResult RetornOK()
+        protected ResponseResult ReturnOK()
         {
             return new ResponseResult();
         }
-    } 
+    }
 }

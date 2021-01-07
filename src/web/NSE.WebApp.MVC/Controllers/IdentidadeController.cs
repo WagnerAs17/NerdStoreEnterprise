@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using NSE.WebApi.Core.Usuario;
 using NSE.WebApp.MVC.Models;
 using NSE.WebApp.MVC.Services;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -14,11 +14,17 @@ namespace NSE.WebApp.MVC.Controllers
 {
     public class IdentidadeController : MainController
     {
-        private readonly IAutenticacaoService autenticacaoService;
+        private readonly IAutenticacaoService _autenticacaoService;
+        private readonly IAspNetUser _aspNetUser;
 
-        public IdentidadeController(IAutenticacaoService autenticacaoService)
+        public IdentidadeController
+        (
+            IAutenticacaoService autenticacaoService,
+            IAspNetUser aspNetUser
+        )
         {
-            this.autenticacaoService = autenticacaoService;
+            _autenticacaoService = autenticacaoService;
+            _aspNetUser = aspNetUser;
         }
 
         [HttpGet]
@@ -34,13 +40,13 @@ namespace NSE.WebApp.MVC.Controllers
         {
             if (!ModelState.IsValid) return View(usuarioRegistro);
 
-            var resposta = await this.autenticacaoService.Registro(usuarioRegistro);
+            var resposta = await this._autenticacaoService.Registro(usuarioRegistro);
 
             if (ResponsePossuiErros(resposta.ResponseResult)) return View(usuarioRegistro);
 
             await RealizarLogin(resposta);
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Catalogo");
         }
 
         [HttpGet]
@@ -59,13 +65,13 @@ namespace NSE.WebApp.MVC.Controllers
 
             if (!ModelState.IsValid) return View(usuarioLogin);
 
-            var resposta = await this.autenticacaoService.Login(usuarioLogin);
+            var resposta = await this._autenticacaoService.Login(usuarioLogin);
 
             if (ResponsePossuiErros(resposta.ResponseResult)) return View(usuarioLogin);
 
             await RealizarLogin(resposta);
             
-            if(string.IsNullOrEmpty(returnUrl)) return RedirectToAction("Index", "Home");
+            if(string.IsNullOrEmpty(returnUrl)) return RedirectToAction("Index", "Catalogo");
 
             return LocalRedirect(returnUrl);
         }
@@ -90,11 +96,11 @@ namespace NSE.WebApp.MVC.Controllers
 
             var authProperties = new AuthenticationProperties
             {
-                ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(60),
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8),
                 IsPersistent = true
             };
 
-            await HttpContext.SignInAsync(
+            await _aspNetUser.ObterHttpContext().SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties);

@@ -17,7 +17,7 @@ namespace NSE.Carrinho.API.Business
 
         public async Task<CarrinhoCliente> ObterCarrinhoCliente(Guid userId)
         {
-            return await _carrinhoRepository.ObterCarrinhoCliente(userId) ?? new CarrinhoCliente();
+            return await _carrinhoRepository.ObterCarrinhoCliente(userId);
         }
 
         public async Task<ValidationResult> AdicionarCarrinhoCliente(Guid userId, CarrinhoItem item)
@@ -25,7 +25,10 @@ namespace NSE.Carrinho.API.Business
             var carrinho = await ObterCarrinhoCliente(userId);
 
             if (carrinho == null)
+            {
+                carrinho = new CarrinhoCliente(userId);
                 await _carrinhoRepository.AdicionarCarrinhoCliente(ManipularNovoCarrinho(userId, item, carrinho));
+            }
             else
                 await ManipularCarrinhoExistente(carrinho, item);
 
@@ -105,7 +108,7 @@ namespace NSE.Carrinho.API.Business
                 return null;
             }
 
-            var itemCarrinho = await _carrinhoRepository.ObterCarrinhoItem(produtoId, item.ProdutoId);
+            var itemCarrinho = await _carrinhoRepository.ObterCarrinhoItem(carrinho.Id, produtoId);
 
             if (itemCarrinho == null || !carrinho.CarrinhoItemExistente(itemCarrinho))
             {
@@ -119,8 +122,6 @@ namespace NSE.Carrinho.API.Business
             
         private CarrinhoCliente ManipularNovoCarrinho(Guid userId, CarrinhoItem item, CarrinhoCliente carrinho)
         {
-            carrinho = new CarrinhoCliente(userId);
-
             carrinho.AdicionarItem(item);
 
             return carrinho;
@@ -137,7 +138,7 @@ namespace NSE.Carrinho.API.Business
             else
                 await _carrinhoRepository.AdicionarCarrinhoItem(item);
 
-            await _carrinhoRepository.AdicionarCarrinhoCliente(carrinho);
+            _carrinhoRepository.UpdateCarrinho(carrinho);
         }
     }
 }

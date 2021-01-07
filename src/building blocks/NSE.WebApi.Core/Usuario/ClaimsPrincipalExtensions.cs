@@ -12,7 +12,7 @@ namespace NSE.WebApi.Core.Usuario
                 throw new ArgumentException(nameof(principal));
             }
 
-            var claims = principal.FindFirst("sub");
+            var claims = principal.FindFirst(ClaimTypes.NameIdentifier);
 
             return claims?.Value;
         }

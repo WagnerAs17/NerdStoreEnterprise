@@ -34,10 +34,6 @@ namespace NSE.WebApp.MVC.Extensions
             {
                 HandlerCircuitBreakerExceptionAsync(context);
             }
-            catch(Exception ex)
-            {
-                var msg = ex;
-            }
         }
 
         private static void HandleRequestExceptionAsync(HttpContext context, HttpStatusCode statusCode)

@@ -8,48 +8,29 @@ namespace NSE.WebApp.MVC.Controllers
 {
     public class CarrinhoController : MainController
     {
-        private readonly ICarrinhoService _carrinhoService;
-        private readonly ICatalogoService _catalogoService;
-
+        private readonly IComprasBffService _comprasBffService;
         public CarrinhoController
         (
-            ICarrinhoService carrinhoService,
-            ICatalogoService catalogoService
+            IComprasBffService comprasBffService
         )
         {
-            _carrinhoService = carrinhoService;
-            _catalogoService = catalogoService;
+            _comprasBffService = comprasBffService;
         }
 
         [Route("carrinho")]
         public async Task<IActionResult> Index()
         {
-            return View(await _carrinhoService.ObterCarrinho());
+            return View(await _comprasBffService.ObterCarrinho());
         }
 
         [HttpPost]
         [Route("carrinho/adicionar-item")]
-        public async Task<IActionResult> AdicionarItemCarrinho(ItemProdutoViewModel itemProdutoViewModel)
+        public async Task<IActionResult> AdicionarItemCarrinho(ItemCarrinhoViewModel itemProdutoViewModel)
         {
-            var produto = await _catalogoService.ObterPorId(itemProdutoViewModel.ProdutoId);
+            var response = await _comprasBffService.AdicionarItemCarrinho(itemProdutoViewModel);
 
-            if(produto == null)
-            {
-                return ValidarProduto();
-            }
+            if (ResponsePossuiErros(response)) return View("Index", await _comprasBffService.ObterCarrinho());
 
-            ValidarItemCarrinho(produto, itemProdutoViewModel.Quantidade);
-
-            if (!OperacaoValida()) return View("Index", _carrinhoService.ObterCarrinho());
-
-            itemProdutoViewModel.Nome = produto.Nome;
-            itemProdutoViewModel.Valor = produto.Valor;
-            itemProdutoViewModel.Imagem = produto.Imagem;
-
-            var response = await _carrinhoService.AdicionarItemCarrinho(itemProdutoViewModel);
-
-            if(ResponsePossuiErros(response)) return View("Index", _carrinhoService.ObterCarrinho());
-             
             return RedirectToAction("Index");
         }
 
@@ -57,23 +38,12 @@ namespace NSE.WebApp.MVC.Controllers
         [Route("carrinho/atualizar-item")]
         public async Task<IActionResult> AtualizarItemCarrinho(Guid produtoId, int quantidade)
         {
-            var produto = await _catalogoService.ObterPorId(produtoId);
+            var itemProduto = new ItemCarrinhoViewModel { ProdutoId = produtoId, Quantidade = quantidade };
 
-            if (produto == null)
-            {
-                return ValidarProduto();
-            } 
+            var response = await _comprasBffService.AtualizarItemCarrinho(produtoId, itemProduto);
 
-            ValidarItemCarrinho(produto, quantidade);
+            if (ResponsePossuiErros(response)) return View("Index", await _comprasBffService.ObterCarrinho());
 
-            if(!OperacaoValida()) return View("Index", _carrinhoService.ObterCarrinho());
-
-            var itemProduto = new ItemProdutoViewModel { ProdutoId = produtoId, Quantidade = quantidade };
-
-            var response = await _carrinhoService.AtualizarItemCarrinho(itemProduto);
-
-            if (ResponsePossuiErros(response)) return View("Index", _carrinhoService.ObterCarrinho());
-            
             return RedirectToAction("Index");
         }
 
@@ -81,34 +51,11 @@ namespace NSE.WebApp.MVC.Controllers
         [Route("carrinho/remover-item")]
         public async Task<IActionResult> RemoverItemCarrinho(Guid produtoId)
         {
-            var produto = await _catalogoService.ObterPorId(produtoId);
+            var response = await _comprasBffService.RemoverItemCarrinho(produtoId);
 
-            if (produto == null)
-            {
-                return ValidarProduto();
-            }
-
-            var response = await _carrinhoService.RemoverItemCarrinho(produtoId);
-
-            if (ResponsePossuiErros(response)) return View("Index", _carrinhoService.ObterCarrinho());
+            if (ResponsePossuiErros(response)) return View("Index", await _comprasBffService.ObterCarrinho());
 
             return RedirectToAction("Index");
-        }
-
-        private void ValidarItemCarrinho(ProdutoViewModel produto, int quantidade)
-        {
-            if (quantidade < 1)
-                AdicionarErroValidacao($"Escolha ao menos uma unidade do produto {produto.Nome}");
-
-            if (quantidade > produto.QuantidadeEstoque) 
-                AdicionarErroValidacao($"O produto {produto.Nome} possui {produto.QuantidadeEstoque} unidades em estoque, você selecionou {quantidade}.");
-        }
-
-        private IActionResult ValidarProduto()
-        {
-            AdicionarErroValidacao("Produto não existe.");
-
-            return View("Index", _carrinhoService.ObterCarrinho());
         }
     }
 }

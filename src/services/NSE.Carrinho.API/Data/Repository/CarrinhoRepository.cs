@@ -49,7 +49,15 @@ namespace NSE.Carrinho.API.Data.Repository
 
         public async Task<int> SaveChangesAsync()
         {
-            return await _context.SaveChangesAsync();
+            try
+            {
+                return await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                var msg = e.Message;
+                throw;
+            }
         }
 
         public void DeleteCarrinhoItem(CarrinhoItem item)

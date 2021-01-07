@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace NSE.Carrinho.API.Controllers
 {
+    [Authorize]
     public class CarrinhoController : MainController
     {
         private readonly IAspNetUser _aspNetUser;
@@ -27,7 +28,7 @@ namespace NSE.Carrinho.API.Controllers
         [HttpGet("carrinho")]
         public async Task<CarrinhoCliente> ObterCarrinho()
         {
-            return await _carrinhoBusiness.ObterCarrinhoCliente(_aspNetUser.ObterUserId());
+            return await _carrinhoBusiness.ObterCarrinhoCliente(_aspNetUser.ObterUserId()) ?? new CarrinhoCliente();
         }
 
         [HttpPost("carrinho")]
