@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NSE.Pedidos.Infra.Data;
 using NSE.WebApi.Core.Identidade;
 
 namespace NSE.Pedido.API.Configuration
@@ -12,6 +14,11 @@ namespace NSE.Pedido.API.Configuration
         public static void AddApiConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddControllers();
+
+            services.AddDbContext<PedidosContext>(options =>
+            {
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            });
 
             services.AddCors(options =>
             {

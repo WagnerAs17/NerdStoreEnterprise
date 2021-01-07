@@ -4,6 +4,7 @@ using NSE.Core.Data;
 using NSE.Core.DomainObjects;
 using NSE.Core.Mediator;
 using NSE.Core.Messages;
+using NSE.Pedidos.Domain;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,6 +18,8 @@ namespace NSE.Pedidos.Infra.Data
         {
             _mediatorHandler = mediatorHandler;
         }
+
+        public DbSet<Voucher> Vouchers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

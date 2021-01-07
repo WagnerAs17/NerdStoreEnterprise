@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -35,6 +36,8 @@ namespace NSE.Pedido.API
             services.AddSwaggerConfiguration();
 
             services.AddJwtConfiguration(Configuration);
+
+            services.AddMediatR(typeof(Startup));
 
             services.RegisterService();
         }
