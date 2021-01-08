@@ -1,4 +1,5 @@
 ﻿using NSE.Core.DomainObjects;
+using NSE.Pedidos.Domain.Vouchers.Specs;
 using System;
 
 namespace NSE.Pedidos.Domain
@@ -15,5 +16,20 @@ namespace NSE.Pedidos.Domain
         public DateTime DataValidade { get; private set; }
         public bool Ativo { get; private set; }
         public bool Utilizado { get; private set; }
+
+        public bool ValidoParaUtilizazao()
+        {
+            return new VoucherAtivoSpecification()
+                .And(new VoucherDateSpecification())
+                .And(new VoucherQuantidadeSpecification())
+                .IsSatisfiedBy(this);
+        }
+
+        public void MarcarComoUtilizado()
+        {
+            Ativo = false;
+            Utilizado = true;
+            Quantidade = 0;
+        }
     }
 }

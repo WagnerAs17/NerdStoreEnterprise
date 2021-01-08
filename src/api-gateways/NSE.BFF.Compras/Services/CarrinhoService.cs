@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using NSE.BFF.Compras.Extensions;
 using NSE.BFF.Compras.Models;
+using NSE.BFF.Compras.Models.Pedidos;
 using NSE.Core.Communication;
 using System;
 using System.Net.Http;
@@ -14,6 +15,7 @@ namespace NSE.BFF.Compras.Services
         Task<ResponseResult> AdicionarItemCarrinho(ItemCarrinhoDTO itemCarrinhoDto);
         Task<ResponseResult> AtualizarItemCarrinho(Guid produtoId, ItemCarrinhoDTO produto);
         Task<ResponseResult> RemoverItemCarrinho(Guid produtoId);
+        Task<ResponseResult> AplicarVoucherCarrinho(VoucherDTO voucher);
     }
     public class CarrinhoService : Service, ICarrinhoService
     {
@@ -63,6 +65,17 @@ namespace NSE.BFF.Compras.Services
         public async Task<ResponseResult> RemoverItemCarrinho(Guid produtoId)
         {
             var response = await _httpClient.DeleteAsync($"carrinho/{produtoId}");
+
+            if (!TratarErrosResponse(response)) return await DeserializarObjetoResponse<ResponseResult>(response);
+
+            return ReturnOK();
+        }
+
+        public async Task<ResponseResult> AplicarVoucherCarrinho(VoucherDTO voucher)
+        {
+            var stringContent = ObterDado(voucher);
+
+            var response = await _httpClient.PostAsync("/carrinho/aplicar-voucher", stringContent);
 
             if (!TratarErrosResponse(response)) return await DeserializarObjetoResponse<ResponseResult>(response);
 

@@ -1,5 +1,7 @@
-﻿using NSE.Core.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using NSE.Core.Data;
 using NSE.Pedidos.Domain;
+using System.Threading.Tasks;
 
 namespace NSE.Pedidos.Infra.Data.Repository
 {
@@ -13,6 +15,11 @@ namespace NSE.Pedidos.Infra.Data.Repository
         }
 
         public IUnitOfWork UnitOfWork => _context;
+
+        public async Task<Voucher> ObterVoucherPorCodido(string codigo)
+        {
+            return await _context.Vouchers.FirstOrDefaultAsync(x => x.Codigo == codigo);
+        }
 
         public void Dispose()
         {
