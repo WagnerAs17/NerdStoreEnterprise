@@ -11,5 +11,7 @@ namespace NSE.Carrinho.API.Business
         Task<ValidationResult> AdicionarCarrinhoCliente(Guid userId, CarrinhoItem item);
         Task<ValidationResult> UpdateCarrinho(Guid userId, Guid produtoId, CarrinhoItem item);
         Task<ValidationResult> DeleteCarrinho(Guid userId, Guid produtoId);
+        Task<ValidationResult> UpdateCarrinhoCliente(Voucher voucher, CarrinhoCliente carrinho);
+        
     }
 }

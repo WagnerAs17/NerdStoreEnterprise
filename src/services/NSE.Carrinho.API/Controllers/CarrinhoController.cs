@@ -54,5 +54,15 @@ namespace NSE.Carrinho.API.Controllers
 
             return CustomResponse(validation);
         }
+
+        [HttpPost("carrinho/aplicar-voucher")]
+        public async Task<IActionResult> AplicarVoucher(Voucher voucher)
+        {
+            var carrinho = await _carrinhoBusiness.ObterCarrinhoCliente(_aspNetUser.ObterUserId());
+
+            var result = await _carrinhoBusiness.UpdateCarrinhoCliente(voucher, carrinho);
+
+            return CustomResponse(result);
+        }
     }
 }

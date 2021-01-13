@@ -39,6 +39,19 @@ namespace NSE.Carrinho.API.Business
             return carrinho.ValidationResult;
         }
 
+        public async Task<ValidationResult> UpdateCarrinhoCliente(Voucher voucher, CarrinhoCliente carrinho)
+        {
+            var validation = new ValidationResult();
+
+            carrinho.AplicarVoucher(voucher);
+
+            _carrinhoRepository.UpdateCarrinho(carrinho);
+
+            await PersistirDados(validation);
+
+            return validation;
+        }
+
         public async Task<ValidationResult> UpdateCarrinho(Guid userId, Guid produtoId, CarrinhoItem item)
         {
             var validation = new ValidationResult();

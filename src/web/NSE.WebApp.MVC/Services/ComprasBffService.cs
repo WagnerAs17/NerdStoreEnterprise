@@ -72,5 +72,16 @@ namespace NSE.WebApp.MVC.Services
 
             return RetornOK();
         }
+
+        public async Task<ResponseResult> AplicarVoucherCarrinho(string voucher)
+        {
+            var stringContent = ObterDado(voucher);
+
+            var response = await _httpClient.PostAsync("compras/carrinho/aplicar-voucher/", stringContent);
+
+            if (!TratarErrosResponse(response)) return await DeserializarObjetoResponse<ResponseResult>(response);
+
+            return RetornOK();
+        }
     }
 }

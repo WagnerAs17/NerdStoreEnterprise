@@ -108,7 +108,7 @@
                                         <label>Possui um Voucher?</label>
 
                                         <div class="input-group">
-                                            <input type="text" class="form-control" name="VoucherCodigo" id="VoucherCodigo" @*value="@Model.Voucher?.Codigo"*@ placeholder="Voucher Desconto">
+                                            <input type="text" class="form-control" name="VoucherCodigo" id="VoucherCodigo" value="@Model.Voucher?.Codigo" placeholder="Voucher Desconto">
                                             <span class="input-group-append">
                                                 <button type="submit" class="btn btn-primary">Aplicar</button>
                                             </span>
@@ -120,7 +120,7 @@
                         <div class="card">
                             <div class="card-body">
                                 @{
-                                    @*if (Model.VoucherUtilizado)
+                                    if (Model.VoucherUtilizado)
                                     {
                                         <dl class="dlist-align">
                                             <dt>Valor original:</dt>
@@ -130,7 +130,7 @@
                                             <dt>Desconto:</dt>
                                             <dd class="text-right">@this.FormatoMoeda(Model.Desconto)</dd>
                                         </dl>
-                                    }*@
+                                    }
                                 }
                                 <dl class="dlist-align">
                                     <dt>Total:</dt>

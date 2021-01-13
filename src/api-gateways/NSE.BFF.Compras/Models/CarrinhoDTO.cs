@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using NSE.BFF.Compras.Models.Pedidos;
+using System.Collections.Generic;
 
 namespace NSE.BFF.Compras.Models
 {
@@ -8,7 +9,9 @@ namespace NSE.BFF.Compras.Models
         {
             Itens = new List<ItemCarrinhoDTO>();
         }
-
+        public VoucherDTO Voucher { get; set; }
+        public bool VoucherUtilizado { get; set; }
+        public decimal Desconto { get; set; }
         public decimal ValorTotal { get; set; }
         public decimal ValorDesconto { get; set; }
         public List<ItemCarrinhoDTO> Itens { get; set; }
