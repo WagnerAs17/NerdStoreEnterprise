@@ -3,6 +3,7 @@ using NSE.Core.Data;
 using NSE.Pedidos.Domain.Pedidos;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,6 +20,10 @@ namespace NSE.Pedidos.Infra.Data.Repository
 
         public IUnitOfWork UnitOfWork => _context;
 
+        public DbConnection ObterConexao()
+        {
+            return _context.Database.GetDbConnection();
+        }
         public async Task<Pedido> ObterPorId(Guid id)
         {
             return await _context.Pedidos.FirstOrDefaultAsync(x => x.Id == id);

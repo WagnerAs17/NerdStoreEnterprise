@@ -6,5 +6,6 @@ namespace NSE.Pedidos.Domain
     public interface IVoucherRepository : IRepository<Voucher>
     {
         Task<Voucher> ObterVoucherPorCodido(string codigo);
+        void Atualizar(Voucher voucher);
     }
 }
