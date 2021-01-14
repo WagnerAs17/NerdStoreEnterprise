@@ -34,6 +34,8 @@ namespace NSE.Carrinho.API
 
             services.AddJwtConfiguration(Configuration);
 
+            services.AddMessageBusConfiguration(Configuration);
+
             services.AddSwaggerConfiguration();
 
             services.RegisterServices();

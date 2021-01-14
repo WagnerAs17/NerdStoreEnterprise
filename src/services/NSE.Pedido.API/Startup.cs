@@ -39,6 +39,8 @@ namespace NSE.Pedido.API
 
             services.AddMediatR(typeof(Startup));
 
+            services.AddMessageBusConfiguration(Configuration);
+
             services.RegisterService();
         }
 
