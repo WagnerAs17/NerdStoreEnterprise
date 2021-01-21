@@ -52,8 +52,10 @@ namespace NSE.Identidade.API.Controllers
                 EmailConfirmed = true
             };
 
+            var userManager = await _userManager.FindByEmailAsync("");
+            var resultClaim = await _userManager.AddClaimsAsync(userManager, new List<Claim>());
             var result = await _userManager.CreateAsync(user, usuarioRegistro.Senha);
-
+            
             if (result.Succeeded)
             {
                 var clienteResult = await RegistrarCliente(usuarioRegistro);

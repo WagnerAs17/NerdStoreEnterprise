@@ -1,6 +1,8 @@
 ﻿using FluentValidation.Results;
 using MediatR;
 using NSE.Core.Messages;
+using NSE.Core.Messages.Integrations;
+using NSE.MessageBus;
 using NSE.Pedido.API.Application.DTO;
 using NSE.Pedido.API.Application.Events;
 using NSE.Pedidos.Domain;
@@ -17,21 +19,24 @@ namespace NSE.Pedido.API.Application.Commands
     {
         private readonly IVoucherRepository _voucherRepository;
         private readonly IPedidoRepository _pedidoRepository;
+        private readonly IMessageBus _bus;
 
         public PedidoCommandHandler
         (
             IVoucherRepository voucherRepository,
-            IPedidoRepository pedidoRepository
+            IPedidoRepository pedidoRepository,
+            IMessageBus bus
         )
         {
             _voucherRepository = voucherRepository;
             _pedidoRepository = pedidoRepository;
+            _bus = bus;
         }
 
         public async Task<ValidationResult> Handle(AdicionarPedidoCommand message, CancellationToken cancellationToken)
         {
             //Validacao do comando
-            if (message.EhValido()) return message.ValidationResult;
+            if (!message.EhValido()) return message.ValidationResult;
 
             //Mapear pedido
             var pedido = MapearPedido(message);
@@ -43,7 +48,7 @@ namespace NSE.Pedido.API.Application.Commands
             if (!ValidarPedido(pedido)) return ValidationResult;
 
             //Processar pagamento
-            if (!ProcessarPagamento(pedido)) return ValidationResult;
+            if (!await ProcessarPagamento(pedido, message)) return ValidationResult;
 
             //Se pagamento ok
             pedido.AutorizarPedido();
@@ -115,7 +120,7 @@ namespace NSE.Pedido.API.Application.Commands
             var pedidoValorOriginal = pedido.ValorTotal;
             var pedidoDesconto = pedido.Desconto;
 
-            pedido.CalcularValorTotalDesconto();
+            //pedido.CalcularValorTotalDesconto();
 
             if(pedido.ValorTotal != pedidoValorOriginal)
             {
@@ -132,10 +137,32 @@ namespace NSE.Pedido.API.Application.Commands
             return true;
         }
 
-        private bool ProcessarPagamento(Pedidos.Domain.Pedidos.Pedido pedido)
+        private async Task<bool> ProcessarPagamento(Pedidos.Domain.Pedidos.Pedido pedido, AdicionarPedidoCommand message)
         {
-            //Será feito posteriormente;
-            return true;
+            var pedidoIniciado = new PedidoIniciadoIntegrationEvent
+            {
+                PedidoId = pedido.Id,
+                ClienteId = pedido.ClienteId,
+                Valor = pedido.ValorTotal,
+                TipoPagamento = 1, //Realizar mudança em implementação futura,
+                NomeCartao = message.NomeCartao,
+                NumeroCartao = message.NumeroCartao,
+                MesAnoVencimento = message.ExpiracaoCartao,
+                CVV = message.CvvCartao
+            };
+
+            var result = await _bus
+                .RequestAsync<PedidoIniciadoIntegrationEvent, ResponseMessage>(pedidoIniciado);
+
+            if (result.ValidationResult.IsValid) return true;
+
+
+            foreach(var erro in result.ValidationResult.Errors)
+            {
+                AdicionarErro(erro.ErrorMessage);
+            }
+
+            return false;
         }
     }
 }

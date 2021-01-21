@@ -13,11 +13,11 @@ namespace NSE.Catalogo.API.Controllers
     [Authorize]
     public class CatalogoController : MainController
     {
-        private readonly IProdutoRepository produtoRepository;
+        private readonly IProdutoRepository _produtoRepository;
 
         public CatalogoController(IProdutoRepository produtoRepository)
         {
-            this.produtoRepository = produtoRepository;
+            _produtoRepository = produtoRepository;
         }
 
         [AllowAnonymous]
@@ -25,13 +25,19 @@ namespace NSE.Catalogo.API.Controllers
         public async Task<IEnumerable<Produto>> Index()
         {
 
-            return await this.produtoRepository.ObterTodos();
+            return await _produtoRepository.ObterTodos();
         }
-        [AllowAnonymous]
+
         [HttpGet("catalogo/produtos/{id}")]
         public async Task<Produto> ProdutoDetalhe(Guid id)
         {
-            return await this.produtoRepository.ObterPorId(id);
+            return await _produtoRepository.ObterPorId(id);
+        }
+
+        [HttpGet("catalogo/produtos/lista/{ids}")]
+        public async Task<IEnumerable<Produto>> ObterProdutosPorId(string ids)
+        {
+            return await _produtoRepository.ObterProdutosPorId(ids);
         }
     }
 }

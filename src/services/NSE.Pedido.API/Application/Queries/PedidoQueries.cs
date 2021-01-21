@@ -48,7 +48,7 @@ namespace NSE.Pedido.API.Application.Queries
         {
             var pedido = new PedidoDTO
             {
-                Codigo = result[0].CODIGO,
+                Codigo = result[0].CODIDO,
                 Status = result[0].PEDIDOSTATUS,
                 ValorTotal = result[0].VALORTOTAL,
                 Desconto = result[0].DESCONTO,
@@ -61,7 +61,7 @@ namespace NSE.Pedido.API.Application.Queries
                     Bairro = result[0].BAIRRO,
                     Cep = result[0].CEP,
                     Cidade = result[0].CIDADE,
-                    Complemento = result[0].COMPLEMENTO,
+                    Complemento = result[0]?.COMPLEMENTO != null ? result[0]?.COMPLEMENTO : null,
                     Estado = result[0].ESTADO,
                     Numero = result[0].NUMERO
                 }

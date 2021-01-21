@@ -3,6 +3,8 @@ using NSE.Core.Communication;
 using NSE.WebApp.MVC.Extensions;
 using NSE.WebApp.MVC.Models;
 using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -82,6 +84,70 @@ namespace NSE.WebApp.MVC.Services
             if (!TratarErrosResponse(response)) return await DeserializarObjetoResponse<ResponseResult>(response);
 
             return RetornOK();
+        }
+
+        public PedidoTransacaoViewModel MapearParaPedido(CarrinhoViewModel carrinho, EnderecoViewModel endereco)
+        {
+            var pedido = new PedidoTransacaoViewModel
+            {
+                Desconto = carrinho.Desconto,
+                Itens = carrinho.Itens,
+                ValorTotal = carrinho.ValorTotal,
+                VoucherCodigo = carrinho.Voucher != null ? carrinho.Voucher.Codigo : null,
+                VoucherUtilizado = carrinho.VoucherUtilizado
+            };
+
+            if(endereco != null)
+            {
+                pedido.Endereco = new EnderecoViewModel
+                {
+                    Bairro = endereco.Bairro,
+                    Cep = endereco.Cep,
+                    Cidade = endereco.Cidade,
+                    Complemento = endereco.Complemento,
+                    Estado = endereco.Estado,
+                    Logradouro = endereco.Logradouro,
+                    Numero = endereco.Numero
+                };
+            }
+
+
+            return pedido;
+        }
+
+        public async Task<ResponseResult> FinalizarPedido(PedidoTransacaoViewModel pedidoTransacao)
+        {
+            var stringContent = ObterDado(pedidoTransacao);
+
+            var response = await _httpClient.PostAsync("/compras/pedido", stringContent);
+
+            if (!TratarErrosResponse(response)) return await DeserializarObjetoResponse<ResponseResult>(response);
+
+            return RetornOK();
+        }
+
+        public async Task<PedidoViewModel> ObterUltimoPedido()
+        {
+            var response = await _httpClient.GetAsync("/compras/pedido/ultimo");
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                return null;
+
+            TratarErrosResponse(response);
+
+            return await DeserializarObjetoResponse<PedidoViewModel>(response);
+        }
+
+        public async Task<IEnumerable<PedidoViewModel>> ObterListaPorClienteId()
+        {
+            var response = await _httpClient.GetAsync("compras/pedido/lista-cliente");
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                return null;
+
+            TratarErrosResponse(response);
+
+            return await DeserializarObjetoResponse<IEnumerable<PedidoViewModel>>(response);
         }
     }
 }
