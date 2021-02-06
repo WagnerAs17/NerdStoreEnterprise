@@ -6,6 +6,7 @@ namespace NSE.Pedido.API.Application.DTO
     public class PedidoDTO
     {
         public Guid Id { get; set; }
+        public Guid ClienteId { get; set; }
         public int Codigo { get; set; }
         public int Status { get; set; }
         public DateTime Data { get; set; }

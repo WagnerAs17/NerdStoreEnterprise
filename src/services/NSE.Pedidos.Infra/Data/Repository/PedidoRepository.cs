@@ -54,7 +54,7 @@ namespace NSE.Pedidos.Infra.Data.Repository
             await _context.AddAsync(pedido);
         }
 
-        public void Update(Pedido pedido)
+        public void Atualizar(Pedido pedido)
         {
             _context.Update(pedido);
         }

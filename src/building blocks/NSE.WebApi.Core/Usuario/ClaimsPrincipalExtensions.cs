@@ -40,5 +40,17 @@ namespace NSE.WebApi.Core.Usuario
 
             return claims?.Value;
         }
+
+        public static string GetUserRefreshToken(this ClaimsPrincipal principal)
+        {
+            if(principal is null)
+            {
+                throw new ArgumentException(nameof(principal));
+            }
+
+            var claims = principal.FindFirst("RefreshToken");
+
+            return claims?.Value;
+        }
     }
 }

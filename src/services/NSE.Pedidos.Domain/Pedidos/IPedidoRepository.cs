@@ -11,7 +11,7 @@ namespace NSE.Pedidos.Domain.Pedidos
         Task<Pedido> ObterPorId(Guid id);
         Task<IEnumerable<Pedido>> ObterListaPorClienteId(Guid clienteId);
         Task Adicionar(Pedido pedido);
-        void Update(Pedido pedido);
+        void Atualizar(Pedido pedido);
 
         DbConnection ObterConexao();
 

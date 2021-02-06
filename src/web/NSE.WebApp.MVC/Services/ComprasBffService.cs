@@ -43,7 +43,7 @@ namespace NSE.WebApp.MVC.Services
 
         public async Task<ResponseResult> AdicionarItemCarrinho(ItemCarrinhoViewModel produtoViewModel)
         {
-            var itemContent = ObterDado(produtoViewModel);
+            var itemContent = ObterConteudo(produtoViewModel);
 
             var response = await _httpClient.PostAsync($"/compras/carrinho/items/", itemContent);
 
@@ -57,7 +57,7 @@ namespace NSE.WebApp.MVC.Services
 
         public async Task<ResponseResult> AtualizarItemCarrinho(Guid produtoId, ItemCarrinhoViewModel produto)
         {
-            var itemContent = ObterDado(produto);
+            var itemContent = ObterConteudo(produto);
 
             var response = await _httpClient.PutAsync($"compras/carrinho/items/{produtoId}", itemContent);
 
@@ -77,7 +77,7 @@ namespace NSE.WebApp.MVC.Services
 
         public async Task<ResponseResult> AplicarVoucherCarrinho(string voucher)
         {
-            var stringContent = ObterDado(voucher);
+            var stringContent = ObterConteudo(voucher);
 
             var response = await _httpClient.PostAsync("compras/carrinho/aplicar-voucher/", stringContent);
 
@@ -117,7 +117,7 @@ namespace NSE.WebApp.MVC.Services
 
         public async Task<ResponseResult> FinalizarPedido(PedidoTransacaoViewModel pedidoTransacao)
         {
-            var stringContent = ObterDado(pedidoTransacao);
+            var stringContent = ObterConteudo(pedidoTransacao);
 
             var response = await _httpClient.PostAsync("/compras/pedido", stringContent);
 

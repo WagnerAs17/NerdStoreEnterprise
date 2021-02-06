@@ -33,7 +33,7 @@ namespace NSE.WebApp.MVC.Services
 
         public async Task<ResponseResult> AdicionarEndereco(EnderecoViewModel endereco)
         {
-            var stringContent = ObterDado(endereco);
+            var stringContent = ObterConteudo(endereco);
 
             var response = await _http.PostAsync("/cliente/endereco", stringContent);
 

@@ -1,7 +1,10 @@
 ﻿using FluentValidation.Results;
+using NSE.Core.DomainObjects;
 using NSE.Core.Messages.Integrations;
 using NSE.Pagamento.API.Facade;
 using NSE.Pagamento.API.Models;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NSE.Pagamento.API.Services
@@ -51,6 +54,78 @@ namespace NSE.Pagamento.API.Services
             }
 
             return new ResponseMessage(validationResult);
+        }
+
+        public async Task<ResponseMessage> CancelarPagamento(Guid pedidoId)
+        {
+            var transacoes = await _pagamentoRepository.ObterTransacoesPorPedidoId(pedidoId);
+
+            var transacaoAutorizada = transacoes?.FirstOrDefault(x => x.Status == StatusTransacao.Autorizado);
+
+            var validation = new ValidationResult();
+
+            if (transacaoAutorizada == null) throw new DomainException($"Transacao não encontrada para o pedido: {pedidoId}");
+
+            var transacao = await _pagamentoFacade.CancelarPagamento(transacaoAutorizada);
+
+            if(transacao.Status != StatusTransacao.Negado)
+            {
+                validation.Errors.Add(
+                    new ValidationFailure("Pagamento", $"Não foi possível cancelar o pagamento do pedido: {pedidoId}"));
+
+                return new ResponseMessage(validation);
+            }
+
+            transacao.PagamentoId = transacaoAutorizada.PagamentoId;
+
+            await _pagamentoRepository.AdicionarTransacao(transacao);
+
+            if (!await _pagamentoRepository.UnitOfWork.Commit())
+            {
+                validation.Errors.Add(
+                    new ValidationFailure("Pagamento",
+                    $"Não foi possível persistir o cancelamento do pagamento para o pedido {pedidoId}"));
+
+                return new ResponseMessage(validation);
+            }
+
+            return new ResponseMessage(validation);
+        }
+
+        public async Task<ResponseMessage> CapturarPagamento(Guid pedidoId)
+        {
+            var transacoes = await _pagamentoRepository.ObterTransacoesPorPedidoId(pedidoId);
+
+            var transacaoAutorizada = transacoes?.FirstOrDefault(x => x.Status == StatusTransacao.Autorizado);
+
+            var validation = new ValidationResult();
+
+            if (transacaoAutorizada == null) throw new DomainException($"Transacao não encontrada para o pedido: {pedidoId}");
+
+            var transacao = await _pagamentoFacade.CapturarPagamento(transacaoAutorizada);
+
+            if (transacao.Status != StatusTransacao.Pago)
+            {
+                validation.Errors.Add(
+                    new ValidationFailure("Pagamento", $"Não foi possível capturar o pagamento do pedido: {pedidoId}"));
+
+                return new ResponseMessage(validation);
+            }
+
+            transacao.PagamentoId = transacaoAutorizada.PagamentoId;
+
+            await _pagamentoRepository.AdicionarTransacao(transacao);
+
+            if (!await _pagamentoRepository.UnitOfWork.Commit())
+            {
+                validation.Errors.Add(
+                    new ValidationFailure("Pagamento",
+                    $"Não foi possível persistir a captura do pagamento para o pedido {pedidoId}"));
+
+                return new ResponseMessage(validation);
+            }
+
+            return new ResponseMessage(validation);
         }
     }
 }

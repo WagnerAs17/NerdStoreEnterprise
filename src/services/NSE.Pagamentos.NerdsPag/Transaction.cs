@@ -79,7 +79,36 @@ namespace NSE.Pagamentos.NerdsPag
                 return Task.FromResult(transaction);
             }
 
-            return CancelAuthorization();
+            transaction = new Transaction
+            {
+                AuthorizationCode = "",
+                CardBrand = "",
+                TransactionDate = DateTime.Now,
+                Cost = 0,
+                Amount = 0,
+                Status = TransactionStatus.Refused,
+                Tid = "",
+                Nsu = ""
+            };
+
+            return Task.FromResult(transaction);
+        }
+
+        public Task<Transaction> CaptureCardTransaction()
+        {
+            var transaction = new Transaction
+            {
+                AuthorizationCode = GetGenericCode(),
+                CardBrand = CardBrand,
+                TransactionDate = DateTime.Now,
+                Cost = 0,
+                Amount = Amount,
+                Status = TransactionStatus.Paid,
+                Tid = Tid,
+                Nsu = Nsu
+            };
+
+            return Task.FromResult(transaction);
         }
 
         public Task<Transaction> CancelAuthorization()
@@ -91,7 +120,7 @@ namespace NSE.Pagamentos.NerdsPag
                 TransactionDate = DateTime.Now,
                 Cost = 0,
                 Amount = Amount,
-                Status = TransactionStatus.Refused,
+                Status = TransactionStatus.Cancelled,
                 Tid = Tid,
                 Nsu = Nsu
             };

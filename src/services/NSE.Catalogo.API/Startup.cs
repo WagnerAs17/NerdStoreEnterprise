@@ -32,6 +32,8 @@ namespace NSE.Catalogo.API
 
             services.AddJwtConfiguration(Configuration);
 
+            services.AddMessageBusConfiguration(Configuration);
+
             services.AddSwaggerConfiguration();
 
             services.RegisterDependencyInjection();

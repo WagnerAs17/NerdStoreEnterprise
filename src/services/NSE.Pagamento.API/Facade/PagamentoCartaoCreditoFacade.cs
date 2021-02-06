@@ -60,5 +60,39 @@ namespace NSE.Pagamento.CardAntiCorruption
                 TID = transaction.Tid
             };
         }
+
+        public async Task<Transacao> CapturarPagamento(Transacao transacao)
+        {
+            var nerdsPag = new NerdsPagService(
+                _pagamentoConfig.DefaultApiKey, _pagamentoConfig.DefaultEncryptionKey);
+
+            var transaction = ParaTransaction(transacao, nerdsPag);
+
+            return ParaTransacao(await transaction.CaptureCardTransaction());
+        }
+
+        public async Task<Transacao> CancelarPagamento(Transacao transacao)
+        {
+            var nerdsPag = new NerdsPagService(
+                _pagamentoConfig.DefaultApiKey, _pagamentoConfig.DefaultEncryptionKey);
+
+            var transaction = ParaTransaction(transacao, nerdsPag);
+
+            return ParaTransacao(await transaction.CancelAuthorization());
+        }
+
+        private Transaction ParaTransaction(Transacao transacao, NerdsPagService nerdsPag)
+        {
+            return new Transaction(nerdsPag)
+            {
+                Status = (TransactionStatus)transacao.Status,
+                Amount = transacao.ValorTotal,
+                CardBrand = transacao.BandeiraCartao,
+                AuthorizationCode = transacao.CodigoAutorizacao,
+                Cost = transacao.CustoTransacao,
+                Nsu = transacao.NSU,
+                Tid = transacao.TID
+            };
+        }
     }
 }

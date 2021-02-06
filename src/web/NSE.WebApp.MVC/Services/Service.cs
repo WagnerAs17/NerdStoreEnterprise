@@ -10,7 +10,7 @@ namespace NSE.WebApp.MVC.Services
 {
     public abstract class Service
     {
-        protected StringContent ObterDado(object dado)
+        protected StringContent ObterConteudo(object dado)
         {
             return new StringContent
                 (

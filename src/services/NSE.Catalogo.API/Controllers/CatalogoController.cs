@@ -22,10 +22,10 @@ namespace NSE.Catalogo.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("catalogo/produtos")]
-        public async Task<IEnumerable<Produto>> Index()
+        public async Task<PagedResult<Produto>> Index([FromQuery] int ps = 8, [FromQuery] int pi = 1, string q = null)
         {
 
-            return await _produtoRepository.ObterTodos();
+            return await _produtoRepository.ObterTodos(ps, pi, q);
         }
 
         [HttpGet("catalogo/produtos/{id}")]
